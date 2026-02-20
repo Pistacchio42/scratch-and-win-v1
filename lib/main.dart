@@ -4,8 +4,11 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
-
+import 'dart:ui' as ui;
 import 'package:scratch_card/scratch_card.dart';
+import 'package:scratcher/scratcher.dart';
+
+import 'GoldShineText.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,6 +22,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Gratta via il prurito di vittoria',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
       ),
@@ -37,9 +41,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+
+  final scratchKey = GlobalKey<ScratcherState>();
   int _counter = 0;
-  bool scratched=false;
-  late List <SizedBox> scratchList=[];
+  bool scratched = false;
+  late List <SizedBox> scratchList = [];
   var assets = [
     "assets/images/01.jpg",
     "assets/images/02.jpg",
@@ -68,31 +74,51 @@ class _MyHomePageState extends State<MyHomePage> {
     "assets/images/25.jpg",
     "assets/images/26.jpg",
   ];
-  var selected=[0,1,2,3,4,5];
-  String soyjack= "assets/images/scratch.jpg";
+  var selected = [0, 1, 2, 3, 4, 5];
+  String soyjack = "assets/images/scratch.jpg";
+  List keys = [];
+  Timer? timer;
+
   @override
-  void initState()  {
+  void initState() {
+    super.initState();
+    timer = Timer.periodic(Duration(seconds: 12), (Timer t) => addMoney(1));
     // TODO: read value from money.txt and display it at the top of the app.
     //TODO: Check if the date in lastDate.txt is not today, if true give 5 money
+
+    keys.add(new GlobalKey<ScratcherState>());
+    keys.add(new GlobalKey<ScratcherState>());
+    keys.add(new GlobalKey<ScratcherState>());
+    keys.add(new GlobalKey<ScratcherState>());
+    keys.add(new GlobalKey<ScratcherState>());
+    keys.add(new GlobalKey<ScratcherState>());
+
     buyNewOne();
-    widget.storage.readCounter().then((value){
+    widget.storage.readCounter().then((value) {
       setState(() {
-        _counter=value;
+        _counter = value;
       });
     });
-    super.initState();
   }
 
-  Future<File> buyNewOne() {
+  @override
+  void dispose(){
+    timer?.cancel();
+    super.dispose();
+  }
+
+  Future<File>? buyNewOne() {
     //resetta le immagini sotto, aggiunge i valori per un check nella vincita.
-    for(int i =0; i<6; i++){
+    for (int i = 0; i < 6; i++) {
       var intValue = Random().nextInt(assets.length);
       selected[i] = intValue;
     }
     setState(() {
-      _counter -=5;
-      for(int i=0; i<6; i++){
-        scratchList.remove(0);
+      _counter -= 5;
+      scratchList.clear();
+      for (int i = 0; i < 6; i++) {
+        (keys.elementAt(i) as GlobalKey<ScratcherState>).currentState?.reset(
+            duration: Duration(milliseconds: 2000));
         scratchList.add(ScratchPatch(i));
       }
     });
@@ -100,85 +126,92 @@ class _MyHomePageState extends State<MyHomePage> {
     return widget.storage.writeCounter(_counter);
   }
 
-  Future<File> addMoney(int moneyToAdd){
+  Future<File> addMoney(int moneyToAdd) {
     setState(() {
-      _counter+= moneyToAdd;
+      _counter += moneyToAdd;
     });
     return widget.storage.writeCounter(_counter);
   }
 
   @override
-    Widget build(BuildContext context) {
-      return Scaffold(
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Gettoni: $_counter'),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                scratchList[0],
-                SizedBox(height: 10, width: 10,),
-                scratchList[1],
-              ],
-            ),
-            SizedBox(height: 10, width: 10,),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                scratchList[2],
-                SizedBox(height: 10, width: 10,),
-                scratchList[3],
-              ],
-            ),
-            SizedBox(height: 10, width: 10,),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                scratchList[4],
-                SizedBox(height: 10, width: 10,),
-                scratchList[5],
-              ],
-            ),
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          GoldShineText('Gettoni: $_counter', size: 52),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              scratchList[0],
+              SizedBox(height: 10, width: 10,),
+              scratchList[1],
+            ],
+          ),
+          SizedBox(height: 10, width: 10,),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              scratchList[2],
+              SizedBox(height: 10, width: 10,),
+              scratchList[3],
+            ],
+          ),
+          SizedBox(height: 10, width: 10,),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              scratchList[4],
+              SizedBox(height: 10, width: 10,),
+              scratchList[5],
+            ],
+          ),
 
-          ],
-        ),
-        floatingActionButton: IconButton(onPressed: buyNewOne, icon: Icon(Icons.shopping_cart)),
-      );
-    }
+        ],
+      ),
+      floatingActionButton: IconButton(
+        onPressed: buyNewOne,
+        icon: Icon(Icons.shopping_cart),
+        tooltip: "Compra un nuovo biglietto a 5 gettoni",
+      ),
+    );
+  }
 
 
-  SizedBox ScratchPatch(int value){
+  SizedBox ScratchPatch(int value) {
     return SizedBox(
-      height: 200,width: 200,
+      height: 200, width: 200,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(50),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(50),
-          child: ScratchCard(
-            scratchPercentage: (percentage) {
-              if(percentage>80) {
-                checkVictory(value);
-              }
-            },
-            stockSize: 50,
-            scratchImage: soyjack,
-            child: Center(
-                child: Image.asset(assets[selected[value]])),
-          ),
+            borderRadius: BorderRadius.circular(50),
+            child: Scratcher(
+              key: keys.elementAt(value),
+              image: Image.asset(soyjack),
+              onChange: (percentage) =>
+              {
+                if(percentage > 50) checkVictory(value)
+              },
+              child: SizedBox(height: 250,
+                  width: 250,
+                  child: Image.asset(assets[selected[value]])),)
         ),
       ),
     );
   }
 
-  var checkedBox=[false, false, false, false, false, false];
+  var checkedBox = [false, false, false, false, false, false];
+
   void checkVictory(int value) {
-      checkedBox[value]=true;
-      bool allChecked = checkedBox.fold(true, (t,e)=> t && e);
-      if(allChecked)
+    if (!checkedBox[value]) {
+      print('check $value');
+      checkedBox[value] = true;
+      bool allChecked = checkedBox.fold(true, (t, e) => t && e);
+      if (allChecked)
         wincondition();
+    }
   }
 
   void wincondition() {
@@ -188,52 +221,52 @@ class _MyHomePageState extends State<MyHomePage> {
     //5 => 1000
     //6 => 10000
     var howManyTimesDoesItAppear = Map();
-    selected.forEach((value){
-      if(!howManyTimesDoesItAppear.containsKey(value)) {
+    selected.forEach((value) {
+      if (!howManyTimesDoesItAppear.containsKey(value)) {
         howManyTimesDoesItAppear[value] = 1;
       } else {
-        howManyTimesDoesItAppear[value] +=1;
+        howManyTimesDoesItAppear[value] += 1;
       }
     });
-    howManyTimesDoesItAppear.forEach((key,value){
-      var mul =1;
-      switch (key){
+    howManyTimesDoesItAppear.forEach((key, value) {
+      var mul = 1;
+      switch (key) {
         case 0:
-          if(value > 2) mul =6;
+          if (value > 2) mul = 6;
           break;
         case 1:
-          if(value > 2) mul =5;
+          if (value > 2) mul = 5;
           break;
         case 2:
-          if(value > 2) mul =4;
+          if (value > 2) mul = 4;
           break;
         case 3:
-          if(value > 2) mul =3;
+          if (value > 2) mul = 3;
           break;
         case 4:
-          if(value > 2) mul =2;
+          if (value > 2) mul = 2;
           break;
       }
 
-      switch (value){
+      switch (value) {
         case 2:
-          addMoney(mul*25);
+          addMoney(mul * 5);
           break;
         case 3:
-          addMoney(mul*100);
+          addMoney(mul * 100);
           break;
         case 4:
-          addMoney(mul*500);
+          addMoney(mul * 500);
           break;
         case 5:
-          addMoney(mul*1000);
+          addMoney(mul * 1000);
           break;
         case 6:
-          addMoney(mul*10000);
+          addMoney(mul * 10000);
           break;
       }
     });
-    checkedBox=[false, false, false, false, false, false];
+    checkedBox = [false, false, false, false, false, false];
   }
 }
 
@@ -270,5 +303,14 @@ class _MyHomePageState extends State<MyHomePage> {
       return file.writeAsString('$counter');
     }
 
+}
+
+class CounterStorage2 {
+  Future<int> readCounter() async {
+    return 100;
+  }
+  Future<File> writeCounter(int counter) async {
+    return new File("path");
+  }
 }
 
