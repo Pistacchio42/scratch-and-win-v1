@@ -1,11 +1,9 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'dart:async';
-import 'dart:ui' as ui;
-import 'package:scratch_card/scratch_card.dart';
 import 'package:scratcher/scratcher.dart';
 
 import 'GoldShineText.dart';
@@ -26,13 +24,17 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
       ),
-      home: MyHomePage(title: 'Gratta via il prurito di vittoria', storage: CounterStorage()),
+      home: MyHomePage(
+        title: 'Gratta via il prurito di vittoria',
+        storage: CounterStorage(),
+      ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title, required this.storage});
+
   final CounterStorage storage;
   final String title;
 
@@ -41,11 +43,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   final scratchKey = GlobalKey<ScratcherState>();
   int _counter = 0;
   bool scratched = false;
-  late List <SizedBox> scratchList = [];
+  late List<SizedBox> scratchList = [];
   var assets = [
     "assets/images/01.jpg",
     "assets/images/02.jpg",
@@ -102,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
-  void dispose(){
+  void dispose() {
     timer?.cancel();
     super.dispose();
   }
@@ -118,7 +119,8 @@ class _MyHomePageState extends State<MyHomePage> {
       scratchList.clear();
       for (int i = 0; i < 6; i++) {
         (keys.elementAt(i) as GlobalKey<ScratcherState>).currentState?.reset(
-            duration: Duration(milliseconds: 2000));
+          duration: Duration(milliseconds: 2000),
+        );
         scratchList.add(ScratchPatch(i));
       }
     });
@@ -144,29 +146,28 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               scratchList[0],
-              SizedBox(height: 10, width: 10,),
+              SizedBox(height: 10, width: 10),
               scratchList[1],
             ],
           ),
-          SizedBox(height: 10, width: 10,),
+          SizedBox(height: 10, width: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               scratchList[2],
-              SizedBox(height: 10, width: 10,),
+              SizedBox(height: 10, width: 10),
               scratchList[3],
             ],
           ),
-          SizedBox(height: 10, width: 10,),
+          SizedBox(height: 10, width: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               scratchList[4],
-              SizedBox(height: 10, width: 10,),
+              SizedBox(height: 10, width: 10),
               scratchList[5],
             ],
           ),
-
         ],
       ),
       floatingActionButton: IconButton(
@@ -177,26 +178,26 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-
   SizedBox ScratchPatch(int value) {
     return SizedBox(
-      height: 200, width: 200,
+      height: 200,
+      width: 200,
       child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(50),
-        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(50)),
         child: ClipRRect(
-            borderRadius: BorderRadius.circular(50),
-            child: Scratcher(
-              key: keys.elementAt(value),
-              image: Image.asset(soyjack),
-              onChange: (percentage) =>
-              {
-                if(percentage > 50) checkVictory(value)
-              },
-              child: SizedBox(height: 250,
-                  width: 250,
-                  child: Image.asset(assets[selected[value]])),)
+          borderRadius: BorderRadius.circular(50),
+          child: Scratcher(
+            key: keys.elementAt(value),
+            image: Image.asset(soyjack),
+            onChange: (percentage) => {
+              if (percentage > 50) checkVictory(value),
+            },
+            child: SizedBox(
+              height: 250,
+              width: 250,
+              child: Image.asset(assets[selected[value]]),
+            ),
+          ),
         ),
       ),
     );
@@ -209,8 +210,7 @@ class _MyHomePageState extends State<MyHomePage> {
       print('check $value');
       checkedBox[value] = true;
       bool allChecked = checkedBox.fold(true, (t, e) => t && e);
-      if (allChecked)
-        wincondition();
+      if (allChecked) wincondition();
     }
   }
 
@@ -270,47 +270,46 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-  class CounterStorage {
-    Future<String> get _localPath async {
-      final directory = await getApplicationDocumentsDirectory();
+class CounterStorage {
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
 
-      return directory.path;
-    }
+    return directory.path;
+  }
 
-    Future<File> get _localFile async {
-      final path = await _localPath;
-      return File('$path/money.txt');
-    }
+  Future<File> get _localFile async {
+    final path = await _localPath;
+    return File('$path/money.txt');
+  }
 
-    Future<int> readCounter() async {
-      try {
-        final file = await _localFile;
-
-        // Read the file
-        final contents = await file.readAsString();
-
-        return int.parse(contents);
-      } catch (e) {
-        // If encountering an error, return 0
-        return 0;
-      }
-    }
-
-    Future<File> writeCounter(int counter) async {
+  Future<int> readCounter() async {
+    try {
       final file = await _localFile;
 
-      // Write the file
-      return file.writeAsString('$counter');
-    }
+      // Read the file
+      final contents = await file.readAsString();
 
+      return int.parse(contents);
+    } catch (e) {
+      // If encountering an error, return 0
+      return 0;
+    }
+  }
+
+  Future<File> writeCounter(int counter) async {
+    final file = await _localFile;
+
+    // Write the file
+    return file.writeAsString('$counter');
+  }
 }
 
 class CounterStorage2 {
   Future<int> readCounter() async {
     return 100;
   }
+
   Future<File> writeCounter(int counter) async {
     return new File("path");
   }
 }
-

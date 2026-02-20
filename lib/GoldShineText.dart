@@ -1,15 +1,9 @@
-
 import 'dart:ui' as ui;
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class GoldShineText extends StatefulWidget {
-  const GoldShineText(
-      this.text, {
-        super.key,
-        this.size = 52,
-      });
+  const GoldShineText(this.text, {super.key, this.size = 52});
 
   final String text;
   final double size;
@@ -25,9 +19,10 @@ class _GoldShineTextState extends State<GoldShineText>
     duration: const Duration(milliseconds: 1800),
   )..repeat();
 
-  late final Animation<double> _x = Tween<double>(begin: -1.2, end: 1.2).animate(
-    CurvedAnimation(parent: _c, curve: Curves.easeInOut),
-  );
+  late final Animation<double> _x = Tween<double>(
+    begin: -1.2,
+    end: 1.2,
+  ).animate(CurvedAnimation(parent: _c, curve: Curves.easeInOut));
 
   @override
   void dispose() {
@@ -35,14 +30,15 @@ class _GoldShineTextState extends State<GoldShineText>
     super.dispose();
   }
 
-  TextStyle _base({Paint? fg, Color? color, List<Shadow>? shadows}) => TextStyle(
-    fontSize: widget.size,
-    fontWeight: FontWeight.w900,
-    letterSpacing: 0.5,
-    foreground: fg,
-    color: color,
-    shadows: shadows,
-  );
+  TextStyle _base({Paint? fg, Color? color, List<Shadow>? shadows}) =>
+      TextStyle(
+        fontSize: widget.size,
+        fontWeight: FontWeight.w900,
+        letterSpacing: 0.5,
+        foreground: fg,
+        color: color,
+        shadows: shadows,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +85,11 @@ class _GoldShineTextState extends State<GoldShineText>
               ),
             shadows: const [
               Shadow(color: Color(0xAAFFF59D), blurRadius: 12),
-              Shadow(color: Color(0x55000000), offset: Offset(0, 2), blurRadius: 3),
+              Shadow(
+                color: Color(0x55000000),
+                offset: Offset(0, 2),
+                blurRadius: 3,
+              ),
             ],
           ),
         ),
@@ -99,31 +99,25 @@ class _GoldShineTextState extends State<GoldShineText>
           animation: _x,
           builder: (_, __) {
             return ShaderMask(
-            blendMode: BlendMode.srcIn, // <- chiave: niente bianco statico
-            shaderCallback: (rect) {
-            final dx = rect.width * _x.value;
-            return ui.Gradient.linear(
-            Offset(dx - rect.width * 0.18, 0),
-            Offset(dx + rect.width * 0.18, 0),
-            const [
-            Color(0x00FFFFFF),
-            Color(0xF5FFFFFF),
-            Color(0x00FFFFFF),
-            ],
-            const [0.0, 0.5, 1.0],
+              blendMode: BlendMode.srcIn, // <- chiave: niente bianco statico
+              shaderCallback: (rect) {
+                final dx = rect.width * _x.value;
+                return ui.Gradient.linear(
+                  Offset(dx - rect.width * 0.18, 0),
+                  Offset(dx + rect.width * 0.18, 0),
+                  const [
+                    Color(0x00FFFFFF),
+                    Color(0xF5FFFFFF),
+                    Color(0x00FFFFFF),
+                  ],
+                  const [0.0, 0.5, 1.0],
+                );
+              },
+              child: Text(widget.text, style: _base(color: Colors.white)),
             );
-            },
-            child: Text(
-            widget.text,
-            style: _base(color: Colors.white),
-            ),
-            );
-            },
-            ),
-
-
-
-            ],
-      );
+          },
+        ),
+      ],
+    );
   }
 }
