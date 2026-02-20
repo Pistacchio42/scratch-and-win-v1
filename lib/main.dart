@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:scratcher/scratcher.dart';
+import 'package:vibration/vibration.dart';
 
 import 'GoldShineText.dart';
 
@@ -79,6 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String soyjack = "assets/images/scratch.jpg";
   List keys = [];
   Timer? timer;
+  bool first=true;
 
   @override
   void initState() {
@@ -109,17 +111,20 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<File>? buyNewOne() {
-    //resetta le immagini sotto, aggiunge i valori per un check nella vincita.
+    if(!first && _counter<4) return null;
     for (int i = 0; i < 6; i++) {
       var intValue = Random().nextInt(assets.length);
       selected[i] = intValue;
     }
     setState(() {
-      _counter -= 5;
+      if(!first) {
+        _counter -= 5;
+      }
+      first=false;
       scratchList.clear();
       for (int i = 0; i < 6; i++) {
         (keys.elementAt(i) as GlobalKey<ScratcherState>).currentState?.reset(
-          duration: Duration(milliseconds: 2000),
+          duration: Duration(milliseconds: 100),
         );
         scratchList.add(ScratchPatch(i));
       }
@@ -190,7 +195,8 @@ class _MyHomePageState extends State<MyHomePage> {
             key: keys.elementAt(value),
             image: Image.asset(soyjack),
             onChange: (percentage) => {
-              if (percentage > 50) checkVictory(value),
+              if (percentage > 50) {checkVictory(value),}
+              else vibrate(5),
             },
             child: SizedBox(
               height: 250,
@@ -268,6 +274,19 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     checkedBox = [false, false, false, false, false, false];
   }
+
+  vibrate(int duration) async {
+    if(await Vibration.hasVibrator()){
+      if (await Vibration.hasAmplitudeControl())
+        if(await Vibration.hasCustomVibrationsSupport()) {
+          Vibration.vibrate(duration: duration,amplitude: 128);
+        }
+        else
+          Vibration.vibrate(amplitude: 128);
+        else
+         Vibration.vibrate();
+    }
+  }
 }
 
 class CounterStorage {
@@ -301,15 +320,5 @@ class CounterStorage {
 
     // Write the file
     return file.writeAsString('$counter');
-  }
-}
-
-class CounterStorage2 {
-  Future<int> readCounter() async {
-    return 100;
-  }
-
-  Future<File> writeCounter(int counter) async {
-    return new File("path");
   }
 }
